@@ -91,6 +91,8 @@
    really makes no sense to haul them around as function parameters. */
 
 
+int num_tried[16] = {0};
+
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
           *out_dir,                   /* Working & output directory       */
@@ -4077,7 +4079,6 @@ static void show_stats(void) {
 
   SAYF(SET_G1 bSTG bLT bH bSTOP cCYA " process timing " bSTG bH30 bH5 bH2 bHB
        bH bSTOP cCYA " overall results " bSTG bH5 bRT "\n");
-
   if (dumb_mode) {
 
     strcpy(tmp, cRST);
@@ -4265,6 +4266,14 @@ static void show_stats(void) {
 
   SAYF(bV bSTOP "   bit flips : " cRST "%-37s " bSTG bV bSTOP "    levels : "
        cRST "%-10s " bSTG bV "\n", tmp, DI(max_depth));
+
+  // SAYF(bV bSTOP " havoc bit flips : " cRST "%-37s " bSTG bV bSTOP
+         // "   new crashes : %s%-10s " bSTG bV "\n", DI(num_tried[0],
+         // unique_crashes ? cLRD : cRST, tmp);
+  SAYF(bV bSTOP " havoc bit flips : " cRST "%-33s " bSTG bV "\n", DI(num_tried[0]));
+  // SAYF("Num havoc bit flips: %d\n", num_tried[0]);
+  // SAYF(bV bSTOP "   havoc bit flips : " num_tried[0] "%-37s " bSTG bV bSTOP "    levels : "
+       // cRST "%-10s " bSTG bV "\n", tmp, DI(max_depth));
 
   if (!skip_deterministic)
     sprintf(tmp, "%s/%s, %s/%s, %s/%s",
@@ -6170,6 +6179,7 @@ havoc_stage:
           /* Flip a single bit somewhere. Spooky! */
 
           FLIP_BIT(out_buf, UR(temp_len << 3));
+          num_tried[0]++;
           break;
 
         case 1:
