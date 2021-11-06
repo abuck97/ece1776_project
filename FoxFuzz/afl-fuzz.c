@@ -91,7 +91,7 @@
    really makes no sense to haul them around as function parameters. */
 
 
-int num_tried[16] = {0};
+static int mutation_operations_ran[16] = {0};
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
@@ -4267,13 +4267,10 @@ static void show_stats(void) {
   SAYF(bV bSTOP "   bit flips : " cRST "%-37s " bSTG bV bSTOP "    levels : "
        cRST "%-10s " bSTG bV "\n", tmp, DI(max_depth));
 
-  // SAYF(bV bSTOP " havoc bit flips : " cRST "%-37s " bSTG bV bSTOP
-         // "   new crashes : %s%-10s " bSTG bV "\n", DI(num_tried[0],
-         // unique_crashes ? cLRD : cRST, tmp);
-  SAYF(bV bSTOP " havoc bit flips : " cRST "%-33s " bSTG bV "\n", DI(num_tried[0]));
-  // SAYF("Num havoc bit flips: %d\n", num_tried[0]);
-  // SAYF(bV bSTOP "   havoc bit flips : " num_tried[0] "%-37s " bSTG bV bSTOP "    levels : "
-       // cRST "%-10s " bSTG bV "\n", tmp, DI(max_depth));
+  int i = 0;
+  for (int i = 0; i < 16; i++) {
+    SAYF(bV bSTOP " havoc operation %s: " cRST "%-33s " bSTG bV "\n", DI(i), DI(mutation_operations_ran[i]));
+  }
 
   if (!skip_deterministic)
     sprintf(tmp, "%s/%s, %s/%s, %s/%s",
@@ -6179,7 +6176,7 @@ havoc_stage:
           /* Flip a single bit somewhere. Spooky! */
 
           FLIP_BIT(out_buf, UR(temp_len << 3));
-          num_tried[0]++;
+          mutation_operations_ran[0]++;
           break;
 
         case 1:
@@ -6187,6 +6184,7 @@ havoc_stage:
           /* Set byte to interesting value. */
 
           out_buf[UR(temp_len)] = interesting_8[UR(sizeof(interesting_8))];
+          mutation_operations_ran[1]++;
           break;
 
         case 2:
@@ -6207,6 +6205,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[2]++;
           break;
 
         case 3:
@@ -6227,6 +6226,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[3]++;
           break;
 
         case 4:
@@ -6234,6 +6234,7 @@ havoc_stage:
           /* Randomly subtract from byte. */
 
           out_buf[UR(temp_len)] -= 1 + UR(ARITH_MAX);
+          mutation_operations_ran[4]++;
           break;
 
         case 5:
@@ -6241,6 +6242,7 @@ havoc_stage:
           /* Randomly add to byte. */
 
           out_buf[UR(temp_len)] += 1 + UR(ARITH_MAX);
+          mutation_operations_ran[5]++;
           break;
 
         case 6:
@@ -6265,6 +6267,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[6]++;
           break;
 
         case 7:
@@ -6289,6 +6292,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[7]++;
           break;
 
         case 8:
@@ -6313,6 +6317,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[8]++;
           break;
 
         case 9:
@@ -6337,6 +6342,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[9]++;
           break;
 
         case 10:
@@ -6346,6 +6352,7 @@ havoc_stage:
              possibility of a no-op. */
 
           out_buf[UR(temp_len)] ^= 1 + UR(255);
+          mutation_operations_ran[10]++;
           break;
 
         case 11 ... 12: {
@@ -6369,6 +6376,7 @@ havoc_stage:
 
             temp_len -= del_len;
 
+            mutation_operations_ran[11]++;
             break;
 
           }
@@ -6421,6 +6429,7 @@ havoc_stage:
 
           }
 
+          mutation_operations_ran[12]++;
           break;
 
         case 14: {
@@ -6445,6 +6454,7 @@ havoc_stage:
             } else memset(out_buf + copy_to,
                           UR(2) ? UR(256) : out_buf[UR(temp_len)], copy_len);
 
+            mutation_operations_ran[13]++;
             break;
 
           }
@@ -6485,6 +6495,7 @@ havoc_stage:
 
             }
 
+            mutation_operations_ran[14]++;
             break;
 
           }
@@ -6537,6 +6548,7 @@ havoc_stage:
             out_buf   = new_buf;
             temp_len += extra_len;
 
+            mutation_operations_ran[15]++;
             break;
 
           }
