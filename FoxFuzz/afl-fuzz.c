@@ -96,6 +96,7 @@
 
 static u64 mutation_ops_ran[NUM_MUTATION_OPS] = {0};
 static u64 unique_paths_per_op[NUM_MUTATION_OPS] = {0};
+static double contribution_per_fuzz[NUM_MUTATION_OPS] = {0};
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
@@ -5010,27 +5011,78 @@ static u8 could_be_interest(u32 old_val, u32 new_val, u8 blen, u8 check_le) {
 
 }
 
+u32 select_mutation_uniformly() {
+  return UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0));
+}
+
 // Selects with 90% chance the mutation that was best
-u32 select_mutation(){
-  u32 max_paths = 0;
+u32 select_mutation_greedy_max_unique_paths_per_op(){
+  u32 max_unique_paths = 0;
   u32 index;
   u8 found = 0;
-  for (u32 i = 0; i < NUM_MUTATION_OPS; i++){
-    if (unique_paths_per_op[i] > max_paths){
-      max_paths = unique_paths_per_op[i];
+  // skip 12 as it is the same as 11, treat every operation distincly
+  for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+    if (unique_paths_per_op[i] > max_unique_paths) {
+      max_unique_paths = unique_paths_per_op[i];
       index = i;
       found = 1;
     }
   }
-  if (UR(100) < PROB_SEL_RAND_MUTATION_OP || (found == 0)){
-    // Return some random mutation
-    return UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0));
-  }
-  return index;
 
+  if (UR(100) < PROB_SEL_RAND_MUTATION_OP || (found == 0)) {
+    // Return some random mutation
+    return select_mutation_uniformly();
+  }
+
+  return index;
 }
 
+// Selects with 90% chance the mutation that was best
+u32 select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran(){
+  double max_ratio = 0;
+  u32 index;
+  u8 found = 0;
+  // skip 12 as it is the same as 11, treat every operation distincly
+  for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+    if (mutation_ops_ran[i] != 0) {
+      double cand_max = unique_paths_per_op[i] / mutation_ops_ran[i];
+      if (cand_max > max_ratio){
+        max_ratio = cand_max;
+        index = i;
+        found = 1;
+      }
+    }
+  }
 
+  if (UR(100) < PROB_SEL_RAND_MUTATION_OP || (found == 0)) {
+    // Return some random mutation
+    return select_mutation_uniformly();
+  }
+
+  return index;
+}
+
+// Selects with 90% chance the mutation that was best
+u32 select_mutation_greedy_max_contribution_percent_sum_per_opt(){
+  u32 max_contribution = 0;
+  u32 index;
+  u8 found = 0;
+  // skip 12 as it is the same as 11, treat every operation distincly
+  for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+    if (contribution_per_fuzz[i] > max_contribution) {
+      max_contribution = unique_paths_per_op[i];
+      index = i;
+      found = 1;
+    }
+  }
+
+  if (UR(100) < PROB_SEL_RAND_MUTATION_OP || (found == 0)) {
+    // Return some random mutation
+    return select_mutation_uniformly();
+  }
+
+  return index;
+}
 
 /* Take the current entry from the queue, fuzz it for a while. This
    function is a tad too long... returns 0 if fuzzed successfully, 1 if
@@ -6428,7 +6480,6 @@ havoc_stage:
             ops_used_per_fuzz_ran[11] = 1;
             ops_used_per_fuzz_ran[12] = 1;
             break;
-
           }
 
         case 13:
@@ -6632,16 +6683,27 @@ havoc_stage:
       }
 
       // find the number of unique paths after this iteration of fuzzing ran (common_fuzz_stuff call above)
+      u32 num_unique_ops_chosen = 0;
       for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
         if (ops_used_per_fuzz_ran[i] == 1) {
           unique_paths_per_op[i] += queued_paths - havoc_queued;
+
+          // exclude operation 12 from being a operation chosen as it is the same as operation 11
+          if (i != 12) {
+            num_unique_ops_chosen++;
+          }
+        }
+      }
+
+      // increment contributions
+      for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+        if (ops_used_per_fuzz_ran[i] == 1) {
+          contribution_per_fuzz[i] += 1 / num_unique_ops_chosen;
         }
       }
 
       havoc_queued = queued_paths;
-
     }
-
   }
 
   new_hit_cnt = queued_paths + unique_crashes;
