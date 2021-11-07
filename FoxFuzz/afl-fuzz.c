@@ -5079,7 +5079,7 @@ u32 select_mutation_greedy_max_contribution_percent_sum_per_opt(){
       continue;
     }
     if (contribution_per_fuzz[i] > max_contribution) {
-      max_contribution = unique_paths_per_op[i];
+      max_contribution = contribution_per_fuzz[i];
       index = i;
       found = 1;
     }
@@ -6261,7 +6261,14 @@ havoc_stage:
     for (i = 0; i < use_stacking; i++) {
 
       // switch (UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0))) {
-      switch (select_mutation_greedy_max_unique_paths_per_op()) {
+      /* Select algorithm functions:
+          select_mutation_uniformly()
+          select_mutation_greedy_max_unique_paths_per_op()
+          select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran()
+          select_mutation_greedy_max_contribution_percent_sum_per_opt()
+      */
+
+      switch (select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran()) {
 
         case 0:
 
