@@ -91,7 +91,8 @@
    really makes no sense to haul them around as function parameters. */
 
 
-#define NUM_MUTATION_OPS 16
+#define NUM_MUTATION_OPS 17
+#define PROB_SEL_RAND_MUTATION_OP 10
 
 static u64 mutation_ops_ran[NUM_MUTATION_OPS] = {0};
 static u64 unique_paths_per_op[NUM_MUTATION_OPS] = {0};
@@ -4254,6 +4255,15 @@ static void show_stats(void) {
   SAYF(bVR bH cCYA bSTOP " fuzzing strategy yields " bSTG bH10 bH bHT bH10
        bH5 bHB bH bSTOP cCYA " path geometry " bSTG bH5 bH2 bH bVL "\n");
 
+
+  //  Adding custom stats here:
+  for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+    sprintf(tmp, "%s/%s",
+            DI(unique_paths_per_op[i]), DI(mutation_ops_ran[i]));
+    SAYF(bV bSTOP " havoc operation %2s: " cRST "%-31s " bSTG bV
+    "                        " bV "\n", DI(i), tmp);
+  }
+
   if (skip_deterministic) {
 
     strcpy(tmp, "n/a, n/a, n/a");
@@ -4267,11 +4277,6 @@ static void show_stats(void) {
 
   }
 
-  //  Adding custom stats here:
-  for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
-    SAYF(bV bSTOP " havoc operation %2s: " cRST "%-31s " bSTG bV
-    "                        " bV "\n", DI(i), DI(mutation_operations_ran[i]));
-  }
 
   SAYF(bV bSTOP "   bit flips : " cRST "%-37s " bSTG bV bSTOP "    levels : "
        cRST "%-10s " bSTG bV "\n", tmp, DI(max_depth));
@@ -5004,6 +5009,27 @@ static u8 could_be_interest(u32 old_val, u32 new_val, u8 blen, u8 check_le) {
   return 0;
 
 }
+
+// Selects with 90% chance the mutation that was best
+u32 select_mutation(){
+  u32 max_paths = 0;
+  u32 index;
+  u8 found = 0;
+  for (u32 i = 0; i < NUM_MUTATION_OPS; i++){
+    if (unique_paths_per_op[i] > max_paths){
+      max_paths = unique_paths_per_op[i];
+      index = i;
+      found = 1;
+    }
+  }
+  if (UR(100) < PROB_SEL_RAND_MUTATION_OP || (found == 0)){
+    // Return some random mutation
+    return UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0));
+  }
+  return index;
+
+}
+
 
 
 /* Take the current entry from the queue, fuzz it for a while. This
@@ -6174,14 +6200,14 @@ havoc_stage:
     for (i = 0; i < use_stacking; i++) {
 
       // switch (UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0))) {
-      switch (UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0))) {
+      switch (select_mutation()) {
 
         case 0:
 
           /* Flip a single bit somewhere. Spooky! */
 
           FLIP_BIT(out_buf, UR(temp_len << 3));
-          
+
           mutation_ops_ran[0]++;
           ops_used_per_fuzz_ran[0] = 1;
           break;
@@ -6191,7 +6217,7 @@ havoc_stage:
           /* Set byte to interesting value. */
 
           out_buf[UR(temp_len)] = interesting_8[UR(sizeof(interesting_8))];
-          
+
           mutation_ops_ran[1]++;
           ops_used_per_fuzz_ran[1] = 1;
           break;
@@ -6245,7 +6271,7 @@ havoc_stage:
           /* Randomly subtract from byte. */
 
           out_buf[UR(temp_len)] -= 1 + UR(ARITH_MAX);
-          
+
           mutation_ops_ran[4]++;
           ops_used_per_fuzz_ran[4] = 1;
           break;
@@ -6255,7 +6281,7 @@ havoc_stage:
           /* Randomly add to byte. */
 
           out_buf[UR(temp_len)] += 1 + UR(ARITH_MAX);
-          
+
           mutation_ops_ran[5]++;
           ops_used_per_fuzz_ran[5] = 1;
           break;
@@ -6371,7 +6397,7 @@ havoc_stage:
              possibility of a no-op. */
 
           out_buf[UR(temp_len)] ^= 1 + UR(255);
-          
+
           mutation_ops_ran[10]++;
           ops_used_per_fuzz_ran[10] = 1;
           break;
@@ -6398,7 +6424,9 @@ havoc_stage:
             temp_len -= del_len;
 
             mutation_ops_ran[11]++;
+            mutation_ops_ran[12]++;
             ops_used_per_fuzz_ran[11] = 1;
+            ops_used_per_fuzz_ran[12] = 1;
             break;
 
           }
@@ -6451,8 +6479,8 @@ havoc_stage:
 
           }
 
-          mutation_ops_ran[12]++;
-          ops_used_per_fuzz_ran[12] = 1;
+          mutation_ops_ran[13]++;
+          ops_used_per_fuzz_ran[13] = 1;
           break;
 
         case 14: {
@@ -6477,8 +6505,8 @@ havoc_stage:
             } else memset(out_buf + copy_to,
                           UR(2) ? UR(256) : out_buf[UR(temp_len)], copy_len);
 
-            mutation_ops_ran[13]++;
-            ops_used_per_fuzz_ran[13] = 1;
+            mutation_ops_ran[14]++;
+            ops_used_per_fuzz_ran[14] = 1;
             break;
 
           }
@@ -6519,8 +6547,8 @@ havoc_stage:
 
             }
 
-            mutation_ops_ran[14]++;
-            ops_used_per_fuzz_ran[14] = 1;
+            mutation_ops_ran[15]++;
+            ops_used_per_fuzz_ran[15] = 1;
             break;
 
           }
@@ -6573,8 +6601,8 @@ havoc_stage:
             out_buf   = new_buf;
             temp_len += extra_len;
 
-            mutation_ops_ran[15]++;
-            ops_used_per_fuzz_ran[15] = 1;
+            mutation_ops_ran[16]++;
+            ops_used_per_fuzz_ran[16] = 1;
             break;
 
           }
@@ -6603,19 +6631,16 @@ havoc_stage:
         perf_score *= 2;
       }
 
+      // find the number of unique paths after this iteration of fuzzing ran (common_fuzz_stuff call above)
+      for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+        if (ops_used_per_fuzz_ran[i] == 1) {
+          unique_paths_per_op[i] += queued_paths - havoc_queued;
+        }
+      }
+
       havoc_queued = queued_paths;
 
     }
-
-    // find the number of unique paths after this iteration of fuzzing ran (common_fuzz_stuff call above)
-    /*
-    FOUND
-    for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
-      if (ops_used_per_fuzz_ran[i] == 1) {
-        unique_paths_per_op[i] += FOUND;
-      }
-    }
-    */
 
   }
 
