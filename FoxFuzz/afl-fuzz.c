@@ -4264,15 +4264,17 @@ static void show_stats(void) {
 
   }
 
+  //  Adding custom stats here:
+  for (int i = 0; i < 16; i++) {
+    SAYF(bV bSTOP " havoc operation %2s: " cRST "%-31s " bSTG bV
+    "                        " bV "\n", DI(i), DI(mutation_operations_ran[i]));
+  }
+
   SAYF(bV bSTOP "   bit flips : " cRST "%-37s " bSTG bV bSTOP "    levels : "
        cRST "%-10s " bSTG bV "\n", tmp, DI(max_depth));
 
 
-  //  Adding custom stats here:
-  int i = 0;
-  for (int i = 0; i < 16; i++) {
-    SAYF(bV bSTOP " havoc operation %s: " cRST "%-33s " bSTG bV "\n", DI(i), DI(mutation_operations_ran[i]));
-  }
+
 
   if (!skip_deterministic)
     sprintf(tmp, "%s/%s, %s/%s, %s/%s",
