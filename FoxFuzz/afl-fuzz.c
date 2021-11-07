@@ -5018,10 +5018,13 @@ u32 select_mutation_uniformly() {
 // Selects with 90% chance the mutation that was best
 u32 select_mutation_greedy_max_unique_paths_per_op(){
   u32 max_unique_paths = 0;
-  u32 index;
+  u32 index = 0;
   u8 found = 0;
   // skip 12 as it is the same as 11, treat every operation distincly
-  for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+  for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+    if (i == 12) {
+      continue;
+    }
     if (unique_paths_per_op[i] > max_unique_paths) {
       max_unique_paths = unique_paths_per_op[i];
       index = i;
@@ -5040,10 +5043,13 @@ u32 select_mutation_greedy_max_unique_paths_per_op(){
 // Selects with 90% chance the mutation that was best
 u32 select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran(){
   double max_ratio = 0;
-  u32 index;
+  u32 index = 0;
   u8 found = 0;
   // skip 12 as it is the same as 11, treat every operation distincly
-  for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+  for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+    if (i == 12) {
+      continue;
+    }
     if (mutation_ops_ran[i] != 0) {
       double cand_max = unique_paths_per_op[i] / mutation_ops_ran[i];
       if (cand_max > max_ratio){
@@ -5065,10 +5071,13 @@ u32 select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran(){
 // Selects with 90% chance the mutation that was best
 u32 select_mutation_greedy_max_contribution_percent_sum_per_opt(){
   u32 max_contribution = 0;
-  u32 index;
+  u32 index = 0;
   u8 found = 0;
   // skip 12 as it is the same as 11, treat every operation distincly
-  for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+  for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+    if (i == 12) {
+      continue;
+    }
     if (contribution_per_fuzz[i] > max_contribution) {
       max_contribution = unique_paths_per_op[i];
       index = i;
@@ -6252,7 +6261,7 @@ havoc_stage:
     for (i = 0; i < use_stacking; i++) {
 
       // switch (UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0))) {
-      switch (select_mutation()) {
+      switch (select_mutation_greedy_max_unique_paths_per_op()) {
 
         case 0:
 
@@ -6696,7 +6705,10 @@ havoc_stage:
       }
 
       // increment contributions
-      for (u32 i = 0; i < NUM_MUTATION_OPS && i != 12; i++) {
+      for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+        if (i == 12) {
+          continue;
+        }
         if (ops_used_per_fuzz_ran[i] == 1) {
           contribution_per_fuzz[i] += 1 / num_unique_ops_chosen;
         }
