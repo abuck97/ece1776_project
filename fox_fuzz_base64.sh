@@ -1,4 +1,10 @@
 #!/usr/bin/bash
+if [ $# != 0 ] && [ $1 == "-m" ]; then
+    cd FoxFuzz
+    sudo make install
+    cd -
+fi
+
 if [ "$USER" == "ubuntu" ]; then
     export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
 fi
