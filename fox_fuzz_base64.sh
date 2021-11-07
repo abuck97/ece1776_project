@@ -1,6 +1,10 @@
 #!/usr/bin/bash
-#export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
+if [ "$USER" == "ubuntu" ]; then
+    export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
+fi
 cd lava_corpus/LAVA-M/base64
-~/ece1776/project/FoxFuzz/afl-fuzz -d -i fuzzer_input/ -o outputs/ -- /home/alex/ece1776/project/lava_bins/base64 -d
+../../../FoxFuzz/afl-fuzz -d -i fuzzer_input/ -o outputs/ -- ../../../lava_bins/base64 -d
 cd -
-#unset AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES
+if [ "$USER" == "ubuntu" ]; then
+    unset AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES
+fi
