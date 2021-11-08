@@ -3502,6 +3502,14 @@ static void write_stats_file(double bitmap_cvg, double stability, double eps) {
              orig_cmdline, slowest_exec_ms);
              /* ignore errors */
 
+  //  Adding custom stats here:
+  u8  tmp[256];
+  for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
+    sprintf(tmp, "%s/%s",
+            DI(unique_paths_per_op[i]), DI(mutation_ops_ran[i]));
+    fprintf(f, "havoc operation %d: %s\n", i, tmp);
+  }
+
   /* Get rss value from the children
      We must have killed the forkserver process and called waitpid
      before calling getrusage */
