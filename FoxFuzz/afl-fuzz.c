@@ -6706,11 +6706,13 @@ havoc_stage:
         perf_score *= 2;
       }
 
+      u32 num_paths_found = queued_paths - havoc_queued;
+
       // find the number of unique paths after this iteration of fuzzing ran (common_fuzz_stuff call above)
       u32 num_unique_ops_chosen = 0;
       for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
         if (ops_used_per_fuzz_ran[i] == 1) {
-          unique_paths_per_op[i] += queued_paths - havoc_queued;
+          unique_paths_per_op[i] += num_paths_found;
 
           // exclude operation 12 from being a operation chosen as it is the same as operation 11
           if (i != 12) {
@@ -6725,7 +6727,7 @@ havoc_stage:
           continue;
         }
         if (ops_used_per_fuzz_ran[i] == 1) {
-          contribution_per_fuzz[i] += 1 / num_unique_ops_chosen;
+          contribution_per_fuzz[i] += num_paths_found / num_unique_ops_chosen;
         }
       }
 
