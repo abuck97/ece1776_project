@@ -3506,8 +3506,8 @@ static void write_stats_file(double bitmap_cvg, double stability, double eps) {
   //  Adding custom stats here:
   u8  tmp[256];
   for (u32 i = 0; i < NUM_MUTATION_OPS; i++) {
-    sprintf(tmp, "%s/%s",
-            DI(unique_paths_per_op[i]), DI(mutation_ops_ran[i]));
+    sprintf(tmp, "%s/%s, %f",
+            DI(unique_paths_per_op[i]), DI(mutation_ops_ran[i]), contribution_per_fuzz[i]);
     fprintf(f, "havoc operation %d: %s\n", i, tmp);
   }
 
@@ -6729,7 +6729,7 @@ havoc_stage:
           continue;
         }
         if (ops_used_per_fuzz_ran[i] == 1) {
-          contribution_per_fuzz[i] += (float) num_paths_found / num_unique_ops_chosen;
+          contribution_per_fuzz[i] += (double) num_paths_found / num_unique_ops_chosen;
         }
       }
 
