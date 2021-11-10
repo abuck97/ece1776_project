@@ -56,6 +56,7 @@
 #include <termios.h>
 #include <dlfcn.h>
 #include <sched.h>
+#include <assert.h>
 
 #include <sys/wait.h>
 #include <sys/time.h>
@@ -6276,7 +6277,7 @@ havoc_stage:
           select_mutation_greedy_max_contribution_percent_sum_per_opt()
       */
 
-      switch (select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran()) {
+      switch (select_mutation_greedy_max_contribution_percent_sum_per_opt()) {
 
         case 0:
 
@@ -6707,6 +6708,7 @@ havoc_stage:
       }
 
       u32 num_paths_found = queued_paths - havoc_queued;
+      assert(num_paths_found == 1);
 
       // find the number of unique paths after this iteration of fuzzing ran (common_fuzz_stuff call above)
       u32 num_unique_ops_chosen = 0;
@@ -6727,7 +6729,7 @@ havoc_stage:
           continue;
         }
         if (ops_used_per_fuzz_ran[i] == 1) {
-          contribution_per_fuzz[i] += num_paths_found / num_unique_ops_chosen;
+          contribution_per_fuzz[i] += (float) num_paths_found / num_unique_ops_chosen;
         }
       }
 
