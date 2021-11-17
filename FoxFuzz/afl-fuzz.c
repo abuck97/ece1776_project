@@ -68,6 +68,8 @@
 #include <sys/ioctl.h>
 #include <sys/file.h>
 
+#include <math.h>
+
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined (__OpenBSD__)
 #  include <sys/sysctl.h>
 #endif /* __APPLE__ || __FreeBSD__ || __OpenBSD__ */
@@ -98,6 +100,7 @@
 static u64 mutation_ops_ran[NUM_MUTATION_OPS] = {0};
 static u64 unique_paths_per_op[NUM_MUTATION_OPS] = {0};
 static double contribution_per_fuzz[NUM_MUTATION_OPS] = {0};
+static u64 num_havocs_run = 0;
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
@@ -5102,6 +5105,61 @@ u32 select_mutation_greedy_max_contribution_percent_sum_per_opt(){
   return index;
 }
 
+//The linear penalty factor for UCB selection if the operator was already selected
+//TODO: Move to top. Leaving here for now so can quickly adjust
+#define LIN_MULTIUSE_PENALTY 0.0001
+
+#define UCB_EXPLORATION_FACTOR 0.001
+
+u32 select_mutation_ucb(u32 num_times_selected_in_curr_stacking[]){
+    //Don't use last two mutations if don't supply dictionary.
+    u32 max_mutation = NUM_MUTATION_OPS - ((extras_cnt + a_extras_cnt) ? 0 : 2);
+
+
+    //At first, just run all of them
+    //Check whether we've run all.
+    u8 ran_all = 1;
+    for (u32 i = 0; i < max_mutation; i++){
+        if (unique_paths_per_op[i] == 0){
+            ran_all = 0;
+            break;
+        }
+    }
+
+    if (ran_all == 0){
+        return select_mutation_uniformly();
+    }
+
+    //Now get our expected average. i.e., the ratio of paths_found to num_times_op_ran
+    float ratios[NUM_MUTATION_OPS];
+    for (u32 i = 0; i < max_mutation; i++){
+        //division by zero not possible since we already checked for that
+        //in the previous loop
+        ratios[i] = (float) unique_paths_per_op[i] / mutation_ops_ran[i];
+    }
+
+    //Now get our penalty for already having been used
+    float penalty[NUM_MUTATION_OPS];
+    for (u32 i = 0; i < max_mutation; i++){
+        penalty[i] = (float) num_times_selected_in_curr_stacking[i] * LIN_MULTIUSE_PENALTY;
+    }
+
+    //Putting everything together.
+    // float ucb[NUM_MUTATION_OPS];
+    float best = -999.9;
+    int best_index = 0;
+    for (u32 i = 0; i < max_mutation; i++){
+        float ucb = ratios[i] - penalty[i] + (UCB_EXPLORATION_FACTOR * sqrt(log(num_havocs_run) / mutation_ops_ran[i]));
+        if (ucb > best){
+            best = ucb;
+            best_index = i;
+        }
+    }
+
+    return best_index;
+}
+
+
 /* Take the current entry from the queue, fuzz it for a while. This
    function is a tad too long... returns 0 if fuzzed successfully, 1 if
    skipped or bailed out. */
@@ -6263,10 +6321,11 @@ havoc_stage:
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
     u32 ops_used_per_fuzz_ran[NUM_MUTATION_OPS] = {0};
 
+    //Will do random numbers by powers of 2 from 2 to 128.
     u32 use_stacking = 1 << (1 + UR(HAVOC_STACK_POW2));
 
     stage_cur_val = use_stacking;
-
+    u32 num_times_selected_in_curr_stacking[NUM_MUTATION_OPS] = {0};
     for (i = 0; i < use_stacking; i++) {
 
       // switch (UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0))) {
@@ -6277,7 +6336,7 @@ havoc_stage:
           select_mutation_greedy_max_contribution_percent_sum_per_opt()
       */
 
-      switch (select_mutation_greedy_max_contribution_percent_sum_per_opt()) {
+      switch (select_mutation_ucb(num_times_selected_in_curr_stacking)) {
 
         case 0:
 
@@ -6287,6 +6346,7 @@ havoc_stage:
 
           mutation_ops_ran[0]++;
           ops_used_per_fuzz_ran[0] = 1;
+          num_times_selected_in_curr_stacking[0]++;
           break;
 
         case 1:
@@ -6297,6 +6357,7 @@ havoc_stage:
 
           mutation_ops_ran[1]++;
           ops_used_per_fuzz_ran[1] = 1;
+          num_times_selected_in_curr_stacking[1]++;
           break;
 
         case 2:
@@ -6319,6 +6380,7 @@ havoc_stage:
 
           mutation_ops_ran[2]++;
           ops_used_per_fuzz_ran[2] = 1;
+          num_times_selected_in_curr_stacking[2]++;
           break;
 
         case 3:
@@ -6341,6 +6403,7 @@ havoc_stage:
 
           mutation_ops_ran[3]++;
           ops_used_per_fuzz_ran[3] = 1;
+          num_times_selected_in_curr_stacking[3]++;
           break;
 
         case 4:
@@ -6351,6 +6414,7 @@ havoc_stage:
 
           mutation_ops_ran[4]++;
           ops_used_per_fuzz_ran[4] = 1;
+          num_times_selected_in_curr_stacking[4]++;
           break;
 
         case 5:
@@ -6361,6 +6425,7 @@ havoc_stage:
 
           mutation_ops_ran[5]++;
           ops_used_per_fuzz_ran[5] = 1;
+          num_times_selected_in_curr_stacking[5]++;
           break;
 
         case 6:
@@ -6387,6 +6452,7 @@ havoc_stage:
 
           mutation_ops_ran[6]++;
           ops_used_per_fuzz_ran[6] = 1;
+          num_times_selected_in_curr_stacking[6]++;
           break;
 
         case 7:
@@ -6413,6 +6479,7 @@ havoc_stage:
 
           mutation_ops_ran[7]++;
           ops_used_per_fuzz_ran[7] = 1;
+          num_times_selected_in_curr_stacking[7]++;
           break;
 
         case 8:
@@ -6439,6 +6506,7 @@ havoc_stage:
 
           mutation_ops_ran[8]++;
           ops_used_per_fuzz_ran[8] = 1;
+          num_times_selected_in_curr_stacking[8]++;
           break;
 
         case 9:
@@ -6465,6 +6533,7 @@ havoc_stage:
 
           mutation_ops_ran[9]++;
           ops_used_per_fuzz_ran[9] = 1;
+          num_times_selected_in_curr_stacking[9]++;
           break;
 
         case 10:
@@ -6477,6 +6546,7 @@ havoc_stage:
 
           mutation_ops_ran[10]++;
           ops_used_per_fuzz_ran[10] = 1;
+          num_times_selected_in_curr_stacking[10]++;
           break;
 
         case 11 ... 12: {
@@ -6504,6 +6574,8 @@ havoc_stage:
             mutation_ops_ran[12]++;
             ops_used_per_fuzz_ran[11] = 1;
             ops_used_per_fuzz_ran[12] = 1;
+            num_times_selected_in_curr_stacking[11]++;
+            num_times_selected_in_curr_stacking[12]++;
             break;
           }
 
@@ -6557,6 +6629,7 @@ havoc_stage:
 
           mutation_ops_ran[13]++;
           ops_used_per_fuzz_ran[13] = 1;
+          num_times_selected_in_curr_stacking[13]++;
           break;
 
         case 14: {
@@ -6583,6 +6656,7 @@ havoc_stage:
 
             mutation_ops_ran[14]++;
             ops_used_per_fuzz_ran[14] = 1;
+            num_times_selected_in_curr_stacking[14]++;
             break;
 
           }
@@ -6625,6 +6699,7 @@ havoc_stage:
 
             mutation_ops_ran[15]++;
             ops_used_per_fuzz_ran[15] = 1;
+            num_times_selected_in_curr_stacking[15]++;
             break;
 
           }
@@ -6679,6 +6754,7 @@ havoc_stage:
 
             mutation_ops_ran[16]++;
             ops_used_per_fuzz_ran[16] = 1;
+            num_times_selected_in_curr_stacking[16]++;
             break;
 
           }
@@ -6689,6 +6765,8 @@ havoc_stage:
 
     if (common_fuzz_stuff(argv, out_buf, temp_len))
       goto abandon_entry;
+
+    num_havocs_run++;
 
     /* out_buf might have been mangled a bit, so let's restore it to its
        original size and shape. */
@@ -6708,7 +6786,7 @@ havoc_stage:
       }
 
       u32 num_paths_found = queued_paths - havoc_queued;
-      assert(num_paths_found == 1);
+      // assert(num_paths_found == 1);
 
       // find the number of unique paths after this iteration of fuzzing ran (common_fuzz_stuff call above)
       u32 num_unique_ops_chosen = 0;
