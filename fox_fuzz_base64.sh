@@ -10,6 +10,7 @@ if [ "$USER" == "ubuntu" ]; then
 fi
 cd lava_corpus/LAVA-M/base64
 ../../../FoxFuzz/afl-fuzz -d -i fuzzer_input/ -o outputs/ -- ../../../lava_bins/base64 -d
+#../../../FoxFuzz/fox-fuzz-max-contributions  -i fuzzer_input/ -o outputs/ -- ../../../lava_bins/base64 
 cd -
 if [ "$USER" == "ubuntu" ]; then
     unset AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES
