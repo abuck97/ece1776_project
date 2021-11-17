@@ -5063,7 +5063,7 @@ u32 select_mutation_greedy_max_ratio_of_unique_paths_found_to_times_op_ran(){
       continue;
     }
     if (mutation_ops_ran[i] != 0) {
-      double cand_max = unique_paths_per_op[i] / mutation_ops_ran[i];
+      double cand_max = (double) unique_paths_per_op[i] / mutation_ops_ran[i];
       if (cand_max > max_ratio){
         max_ratio = cand_max;
         index = i;
