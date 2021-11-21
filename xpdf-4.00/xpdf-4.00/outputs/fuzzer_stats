@@ -1,0 +1,47 @@
+start_time        : 1637516314
+last_update       : 1637516405
+fuzzer_pid        : 31152
+cycles_done       : 0
+execs_done        : 21073
+execs_per_sec     : 233.69
+paths_total       : 926
+paths_favored     : 225
+paths_found       : 916
+paths_imported    : 0
+max_depth         : 2
+cur_path          : 1
+pending_favs      : 225
+pending_total     : 925
+variable_paths    : 0
+stability         : 100.00%
+bitmap_cvg        : 12.39%
+unique_crashes    : 0
+unique_hangs      : 0
+last_path         : 1637516401
+last_crash        : 0
+last_hang         : 0
+execs_since_crash : 21073
+exec_timeout      : 60
+afl_banner        : pdftotext
+afl_version       : 2.57b
+target_mode       : default
+command_line      : ../../FoxFuzz/afl-fuzz -d -i fuzzer_input/ -o outputs/ xpdf/pdftotext @@ /dev/null
+slowest_exec_ms   : 44
+havoc operation 0: 85/5761, 7.338767
+havoc operation 1: 85/5761, 7.338767
+havoc operation 2: 856/53.6k, 122.853053
+havoc operation 3: 856/53.6k, 122.777656
+havoc operation 4: 83/5626, 7.710989
+havoc operation 5: 747/47.1k, 92.186386
+havoc operation 6: 747/47.1k, 93.207143
+havoc operation 7: 766/48.3k, 97.269719
+havoc operation 8: 766/48.3k, 97.194322
+havoc operation 9: 852/53.4k, 123.277656
+havoc operation 10: 852/53.4k, 123.353053
+havoc operation 11: 83/5626, 8.253053
+havoc operation 12: 83/5626, 0.000000
+havoc operation 13: 81/5491, 6.853053
+havoc operation 14: 81/5491, 6.386386
+havoc operation 15: 0/0, 0.000000
+havoc operation 16: 0/0, 0.000000
+peak_rss_mb       : 5

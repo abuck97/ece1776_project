@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/alex/ece1776/project/xpdf-4.00/xpdf-4.00/goo/gtypes.h
+
+/home/alex/ece1776/project/xpdf-4.00/xpdf-4.00/goo/parseargs.c
+stdio.h
+-
+stddef.h
+-
+string.h
+-
+stdlib.h
+-
+ctype.h
+-
+parseargs.h
+/home/alex/ece1776/project/xpdf-4.00/xpdf-4.00/goo/parseargs.h
+
+/home/alex/ece1776/project/xpdf-4.00/xpdf-4.00/goo/parseargs.h
+gtypes.h
+/home/alex/ece1776/project/xpdf-4.00/xpdf-4.00/goo/gtypes.h
+
