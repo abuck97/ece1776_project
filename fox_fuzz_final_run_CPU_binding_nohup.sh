@@ -42,32 +42,32 @@ cpuid=$3
 
 cd lava_corpus/LAVA-M/who
 mkdir -p ../../../experiment_output_final/who/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -b $cpuid -d -i fuzzer_input/ -o ../../../experiment_output_final/who/$1 -- ../../../lava_bins_who/bin/who @@ > ../../../experiment_output_final/who/output_log_${1}.log &
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/who/$1 -- ../../../lava_bins_who/bin/who @@ > ../../../experiment_output_final/who/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 
 cd lava_corpus/LAVA-M/base64
 mkdir -p ../../../experiment_output_final/base64/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -b $cpuid -d -i fuzzer_input/ -o ../../../experiment_output_final/base64/$1 -- ../../../lava_bins/base64 -d > ../../../experiment_output_final/base64/output_log_${1}.log &
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/base64/$1 -- ../../../lava_bins/base64 -d > ../../../experiment_output_final/base64/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 cd lava_corpus/LAVA-M/md5sum
 mkdir -p ../../../experiment_output_final/md5sum/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -b $cpuid -d -i fuzzer_input/ -o ../../../experiment_output_final/md5sum/$1 -- ../../../lava_bins_md5sum/bin/md5sum -c @@ > ../../../experiment_output_final/md5sum/output_log_${1}.log &
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/md5sum/$1 -- ../../../lava_bins_md5sum/bin/md5sum -c @@ > ../../../experiment_output_final/md5sum/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 cd lava_corpus/LAVA-M/uniq
 mkdir -p ../../../experiment_output_final/uniq/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -b $cpuid -d -i fuzzer_input/ -o ../../../experiment_output_final/uniq/$1 -- ../../../lava_bins_uniq/bin/uniq @@ > ../../../experiment_output_final/uniq/output_log_${1}.log &
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/uniq/$1 -- ../../../lava_bins_uniq/bin/uniq @@ > ../../../experiment_output_final/uniq/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 cd xpdf-4.00/xpdf-4.00/
 mkdir -p ../../experiment_output_final/pdftotext/$1
-nohup timeout $2 ../../FoxFuzz/$1 -b $cpuid -d -i fuzzer_input/ -o ../../experiment_output_final/pdftotext/$1 xpdf/pdftotext @@ /dev/null > ../../experiment_output_final/pdftotext/output_log_${1}.log &
+nohup timeout $2 ../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../experiment_output_final/pdftotext/$1 xpdf/pdftotext @@ /dev/null > ../../experiment_output_final/pdftotext/output_log_${1}.log &
 cd -
 
 if [ "$USER" == "ubuntu" ]; then
