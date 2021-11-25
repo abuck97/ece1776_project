@@ -4,7 +4,7 @@ fuzz_arg1_docs="arg1 is the fuzzing executable"
 fuzz_arg2_docs="arg2 is timeout value"
 fuzz_arg3_docs="arg3 is the the cpuid to start binding to"
 
-experiment_dir="$experiment_dir_nov24"
+experiment_dir="experiment_output_final_nov24"
 
 if [ $# == 0 ] || [ $1 == "--help" ]; then
     printf -- "\nOptions:\n\n"
