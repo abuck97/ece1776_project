@@ -96,6 +96,7 @@
 
 #define NUM_MUTATION_OPS 17
 #define PROB_SEL_RAND_MUTATION_OP 10
+#define DO_RESET_STATS_PER_HAVOC_STAGE 1
 
 static u64 mutation_ops_ran[NUM_MUTATION_OPS] = {0};
 static u64 unique_paths_per_op[NUM_MUTATION_OPS] = {0};
@@ -5109,7 +5110,7 @@ u32 select_mutation_greedy_max_contribution_percent_sum_per_opt(){
 //TODO: Move to top. Leaving here for now so can quickly adjust
 #define LIN_MULTIUSE_PENALTY 0.0001
 
-#define UCB_EXPLORATION_FACTOR 0.001
+#define UCB_EXPLORATION_FACTOR 0.002
 
 u32 select_mutation_ucb(u32 num_times_selected_in_curr_stacking[]){
     //Don't use last two mutations if don't supply dictionary.
@@ -6317,6 +6318,14 @@ havoc_stage:
 
   /* We essentially just do several thousand runs (depending on perf_score)
      where we take the input file and make random stacked tweaks. */
+
+  // reset the stats per havoc stage if configured option 
+  if (DO_RESET_STATS_PER_HAVOC_STAGE) {
+    memset(mutation_ops_ran, 0, sizeof(mutation_ops_ran));
+    memset(unique_paths_per_op, 0, sizeof(unique_paths_per_op));
+    memset(contribution_per_fuzz, 0, sizeof(contribution_per_fuzz));
+    num_havocs_run = 0;
+  }
 
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
     u32 ops_used_per_fuzz_ran[NUM_MUTATION_OPS] = {0};
