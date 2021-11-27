@@ -4,6 +4,8 @@ fuzz_arg1_docs="arg1 is the fuzzing executable"
 fuzz_arg2_docs="arg2 is timeout value"
 fuzz_arg3_docs="arg3 is the the cpuid to start binding to"
 
+experiment_dir="experiment_output_final_nov24"
+
 if [ $# == 0 ] || [ $1 == "--help" ]; then
     printf -- "\nOptions:\n\n"
     printf -- "--help for help\n\n"
@@ -41,33 +43,33 @@ fi
 cpuid=$3
 
 cd lava_corpus/LAVA-M/who
-mkdir -p ../../../experiment_output_final/who/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/who/$1 -- ../../../lava_bins_who/bin/who @@ > ../../../experiment_output_final/who/output_log_${1}.log &
+mkdir -p ../../../$experiment_dir/who/$1
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../$experiment_dir/who/$1 -- ../../../lava_bins_who/bin/who @@ > ../../../$experiment_dir/who/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 
 cd lava_corpus/LAVA-M/base64
-mkdir -p ../../../experiment_output_final/base64/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/base64/$1 -- ../../../lava_bins/base64 -d > ../../../experiment_output_final/base64/output_log_${1}.log &
+mkdir -p ../../../$experiment_dir/base64/$1
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../$experiment_dir/base64/$1 -- ../../../lava_bins/base64 -d > ../../../$experiment_dir/base64/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 cd lava_corpus/LAVA-M/md5sum
-mkdir -p ../../../experiment_output_final/md5sum/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/md5sum/$1 -- ../../../lava_bins_md5sum/bin/md5sum -c @@ > ../../../experiment_output_final/md5sum/output_log_${1}.log &
+mkdir -p ../../../$experiment_dir/md5sum/$1
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../$experiment_dir/md5sum/$1 -- ../../../lava_bins_md5sum/bin/md5sum -c @@ > ../../../$experiment_dir/md5sum/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 cd lava_corpus/LAVA-M/uniq
-mkdir -p ../../../experiment_output_final/uniq/$1
-nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../experiment_output_final/uniq/$1 -- ../../../lava_bins_uniq/bin/uniq @@ > ../../../experiment_output_final/uniq/output_log_${1}.log &
+mkdir -p ../../../$experiment_dir/uniq/$1
+nohup timeout $2 ../../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../../$experiment_dir/uniq/$1 -- ../../../lava_bins_uniq/bin/uniq @@ > ../../../$experiment_dir/uniq/output_log_${1}.log &
 cd -
 
 cpuid=$((cpuid + 1))
 cd xpdf-4.00/xpdf-4.00/
-mkdir -p ../../experiment_output_final/pdftotext/$1
-nohup timeout $2 ../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../experiment_output_final/pdftotext/$1 xpdf/pdftotext @@ /dev/null > ../../experiment_output_final/pdftotext/output_log_${1}.log &
+mkdir -p ../../$experiment_dir/pdftotext/$1
+nohup timeout $2 ../../FoxFuzz/$1 -d -i fuzzer_input/ -o ../../$experiment_dir/pdftotext/$1 xpdf/pdftotext @@ /dev/null > ../../$experiment_dir/pdftotext/output_log_${1}.log &
 cd -
 
 if [ "$USER" == "ubuntu" ]; then
